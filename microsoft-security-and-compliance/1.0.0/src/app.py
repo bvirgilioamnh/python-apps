@@ -115,6 +115,22 @@ class MSComplianceCenter(AppBase):
             data = ret.json()
             return {"success": True, "alerts": data["value"]}
 
+        return {"success": False, "reason": "Bad status code %d - expecting 200." % ret.status_code}
+
+    def get_alerts_by_status(self, tenant_id, client_id, client_secret, top, status):
+        graph_url = "https://graph.microsoft.com"
+        session = self.authenticate(tenant_id, client_id, client_secret, graph_url)
+        if top:
+            graph_url = f"https://graph.microsoft.com/v1.0/security/alerts?$filter=Status eq '{status}'&$top={top}"
+        else:
+            graph_url = f"https://graph.microsoft.com/v1.0/security/alerts?$filter=Status eq '{status}'&$top=5"
+        ret = session.get(graph_url)
+        print(ret.status_code)
+        print(ret.text)
+        if ret.status_code < 300:
+            data = ret.json()
+            return {"success": True, "alerts": data["value"]}
+
         return {"success": False, "reason": "Bad status code %d - expecting 200." % ret.status_code}   
 
     def get_alerts_by_vendors(self, tenant_id, client_id, client_secret, vendor, top):
